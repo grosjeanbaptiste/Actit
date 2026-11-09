@@ -7,8 +7,11 @@ pub enum NameStatus {
     Free,
 }
 
+/// GitHub's rules: 1 to 100 of `[A-Za-z0-9._-]`, not `.`/`..`, not ending in `.git`.
 pub(crate) fn valid(name: &str) -> bool {
-    !matches!(name, "" | "." | "..")
+    (1..=100).contains(&name.len())
+        && !matches!(name, "." | "..")
+        && !name.to_ascii_lowercase().ends_with(".git")
         && name
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || "._-".contains(c))
