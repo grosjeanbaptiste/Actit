@@ -8,7 +8,8 @@
   (kag confidence is relative, 1.0 on off-topic pages: seen with "translate text offline").
 
 - `actit --name <repo> [--owner <o>]`: GitHub name check through `gh` (port `RepoNames`, adapter `github.rs`,
-  use case `name.rs`). Exit 0 taken, 1 free, 2 error. Moved here from Actname, whose README says it does not check GitHub.
+  use case `name.rs`). Without `--owner`: any owner (own repos exact, others via search API, first 100 best matches).
+  Exit 0 taken, 1 free, 2 error. Moved here from Actname, whose README says it does not check GitHub.
 
 ## Known gaps
 - indexer `q` is a single-term filter (a phrase returns `[]`, checked 2026-11-09), so actit queries per term.

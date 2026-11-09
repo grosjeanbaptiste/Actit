@@ -26,6 +26,49 @@ pub fn check(owner: &str, name: &str, names: &impl RepoNames) -> Result<NameStat
     })
 }
 
+/// What a GitHub-wide check found.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Outcome {
+    pub status: NameStatus,
+    pub matches: Vec<String>,
+}
+
+/// Is any repository, under any owner, called `name`? Your own repositories
+/// (private ones included) are checked exactly; the rest comes from GitHub search.
+pub fn check_anywhere(name: &str, names: &impl RepoNames) -> Result<Outcome, Error> {
+    valid(name)
+        .then_some(())
+        .ok_or_else(|| Error::InvalidName(name.to_string()))?;
+    let owner = names.owner()?;
+    let mut matches = names.search(name)?;
+    let own = format!("{owner}/{name}");
+    if names.exists(&owner, name)? && !matches.iter().any(|m| m.eq_ignore_ascii_case(&own)) {
+        matches.insert(0, own);
+    }
+    let status = if matches.is_empty() {
+        NameStatus::Free
+    } else {
+        NameStatus::Taken
+    };
+    Ok(Outcome { status, matches })
+}
+
+const SHOWN: usize = 10;
+
+pub fn render_anywhere(name: &str, outcome: &Outcome) -> String {
+    if outcome.status == NameStatus::Free {
+        return format!("FREE {name} (none among the first 100 best GitHub matches)\n");
+    }
+    let mut text = format!("TAKEN {name}\n");
+    for m in outcome.matches.iter().take(SHOWN) {
+        text.push_str(&format!("- {m}\n"));
+    }
+    if outcome.matches.len() > SHOWN {
+        text.push_str(&format!("(+{} more)\n", outcome.matches.len() - SHOWN));
+    }
+    text
+}
+
 /// Same convention as a need: 0 found, 1 not found.
 pub fn exit_code(status: NameStatus) -> i32 {
     i32::from(status == NameStatus::Free)

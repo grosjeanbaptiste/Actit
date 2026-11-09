@@ -4,7 +4,6 @@ use actit::indexer::IndexerCatalog;
 use actit::kag::KagVerifier;
 use actit::name;
 use actit::need::Need;
-use actit::ports::RepoNames;
 use actit::process::{KagProcess, UreqHttp};
 use actit::report::{exit_code, render};
 use actit::search::find;
@@ -15,9 +14,10 @@ const VERIFIED: usize = 5;
 
 fn run_name(repo: &str, owner: Option<String>) -> Result<i32, Error> {
     let names = GhNames::new(KagProcess::new("gh"));
-    let owner = match owner {
-        Some(owner) => owner,
-        None => names.owner()?,
+    let Some(owner) = owner else {
+        let outcome = name::check_anywhere(repo, &names)?;
+        print!("{}", name::render_anywhere(repo, &outcome));
+        return Ok(name::exit_code(outcome.status));
     };
     let status = name::check(&owner, repo, &names)?;
     print!("{}", name::render(&owner, repo, status));
