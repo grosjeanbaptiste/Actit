@@ -4,6 +4,26 @@ Does a tool already exist for this need? Actit answers from **indexer** (the
 catalogue of packages) and **kag** (reads their documentation, cites sources).
 It uses no other search engine and no LLM.
 
+## Install
+
+Needs Rust (`rustup`, toolchain pinned by `rust-toolchain.toml`) and `kag` on `PATH`.
+
+```text
+# 1. kag, the reader (private repository: needs SSH access to it)
+cargo install --locked --git git@github.com:grosjeanbaptiste/kag.git kag-cli
+
+# 2. actit
+cargo install --locked --git https://github.com/grosjeanbaptiste/Actit
+
+# 3. check
+export PATH="$HOME/.cargo/bin:$PATH"
+kag --help | head -1
+actit "serialize rust structs to json"
+```
+
+From a checkout: `cargo install --locked --path .`. `actit` installs to
+`~/.cargo/bin/actit`; update by re-running step 2 with `--force`.
+
 ## API
 
 ### Command line
