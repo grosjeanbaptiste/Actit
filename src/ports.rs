@@ -1,3 +1,4 @@
+use crate::contains::Listing;
 use crate::error::Error;
 use crate::model::{Candidate, Evidence};
 use crate::need::Need;
@@ -21,4 +22,6 @@ pub trait RepoNames {
     /// `owner/name` of the repositories, under any owner, whose name is exactly `name`.
     /// Only the first 100 best matches are read (exact names rank first).
     fn search(&self, name: &str) -> Result<Vec<String>, Error>;
+    /// Repositories, under any owner, whose name contains `text` (first 100 best matches).
+    fn contains(&self, text: &str) -> Result<Listing, Error>;
 }

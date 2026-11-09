@@ -7,7 +7,7 @@ pub enum NameStatus {
     Free,
 }
 
-fn valid(name: &str) -> bool {
+pub(crate) fn valid(name: &str) -> bool {
     !matches!(name, "" | "." | "..")
         && name
             .chars()
@@ -81,21 +81,6 @@ pub fn render(owner: &str, name: &str, status: NameStatus) -> String {
         "FREE"
     };
     format!("{word} {owner}/{name}\n")
-}
-
-type NameArgs = Option<(String, Option<String>)>;
-
-/// `--name <repo> [--owner <o>]` selects a name check; anything else is a need.
-pub fn parse_args(args: &[String]) -> Result<NameArgs, Error> {
-    if args.first().map(String::as_str) != Some("--name") {
-        return Ok(None);
-    }
-    let usage = || Error::Usage("actit --name <repo> [--owner <owner>]".into());
-    match &args[1..] {
-        [name] => Ok(Some((name.clone(), None))),
-        [name, flag, owner] if flag == "--owner" => Ok(Some((name.clone(), Some(owner.clone())))),
-        _ => Err(usage()),
-    }
 }
 
 #[cfg(test)]

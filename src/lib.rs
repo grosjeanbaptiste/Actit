@@ -1,3 +1,5 @@
+pub mod args;
+pub mod contains;
 pub mod error;
 pub mod github;
 pub mod indexer;

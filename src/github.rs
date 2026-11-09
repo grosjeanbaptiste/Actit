@@ -1,3 +1,4 @@
+use crate::contains::Listing;
 use crate::error::Error;
 use crate::kag::Runner;
 use crate::ports::RepoNames;
@@ -33,8 +34,7 @@ impl<R: Runner> RepoNames for GhNames<R> {
     }
 
     fn search(&self, name: &str) -> Result<Vec<String>, Error> {
-        let query = format!("search/repositories?q={name}+in:name&per_page=100");
-        let args = ["api", &query, "-q", ".items[].full_name"].map(String::from);
+        let args = search_args(name, ".items[].full_name");
         let out = self.runner.run(&args).map_err(Error::Github)?;
         Ok(out
             .lines()
@@ -45,6 +45,28 @@ impl<R: Runner> RepoNames for GhNames<R> {
             .map(String::from)
             .collect())
     }
+
+    fn contains(&self, text: &str) -> Result<Listing, Error> {
+        let args = search_args(text, ".total_count, .items[].full_name");
+        let out = self.runner.run(&args).map_err(Error::Github)?;
+        let mut lines = out.lines();
+        let total = lines.next().and_then(|l| l.trim().parse().ok());
+        let total = total.ok_or_else(|| Error::Github("unreadable total_count".into()))?;
+        let lower = text.to_ascii_lowercase();
+        let names = lines
+            .filter(|full| {
+                let repo = full.split_once('/').map_or("", |(_, n)| n);
+                repo.to_ascii_lowercase().contains(&lower)
+            })
+            .map(String::from)
+            .collect();
+        Ok(Listing { total, names })
+    }
+}
+
+fn search_args(text: &str, jq: &str) -> Vec<String> {
+    let query = format!("search/repositories?q={text}+in:name&per_page=100");
+    ["api", &query, "-q", jq].map(String::from).to_vec()
 }
 
 #[cfg(test)]
