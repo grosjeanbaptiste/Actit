@@ -66,3 +66,18 @@ fn search_failure_is_an_error() {
     let f = fake(Err("HTTP 403: rate limit"));
     assert!(matches!(GhNames::new(&f).search("pr"), Err(Error::Github(m)) if m.contains("rate")));
 }
+
+#[test]
+fn contains_reads_total_then_keeps_names_containing_the_text() {
+    let f = fake(Ok("42\nbob/pr\nacme/my-PR-tool\nzed/zzz\n"));
+    let l = GhNames::new(&f).contains("pr").unwrap();
+    assert_eq!(l.total, 42);
+    assert_eq!(l.names, ["bob/pr", "acme/my-PR-tool"]);
+    assert_eq!(f.calls.borrow()[0][1], "search/repositories?q=pr+in:name&per_page=100");
+}
+
+#[test]
+fn contains_with_unreadable_total_or_failure_is_an_error() {
+    assert!(matches!(GhNames::new(&fake(Ok("oops\n"))).contains("pr"), Err(Error::Github(_))));
+    assert!(matches!(GhNames::new(&fake(Err("HTTP 403"))).contains("pr"), Err(Error::Github(_))));
+}

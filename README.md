@@ -41,6 +41,7 @@ Requires `kag` on `PATH` and network access to https://indexer.acteble.workers.d
 ```text
 actit --name <repo>                  # under any owner
 actit --name <repo> --owner <owner>  # one owner, exact
+actit --name <repo> --contains       # every repository whose name contains <repo>
 ```
 
 Asks GitHub through `gh`. Without `--owner`, every owner counts: your own
@@ -51,6 +52,12 @@ GitHub search (the first 100 best matches, where exact names rank first, so
 <owner>/<repo>`. Exit `0` taken, `1` free, `2` error (invalid name, `gh`
 missing or unauthenticated, rate limit, any `gh` failure other than 404).
 Requires `gh` on `PATH`.
+
+`--contains` (not combinable with `--owner`) lists repositories whose name
+contains the text: `CONTAINS <repo>: GitHub reports <N> matches, <k> listed`
+then one `- owner/repo` line per repository (the first 100 best matches; `N` is
+GitHub's own count and may exceed `k`), or `NONE <repo>`. Exit `0` something
+matches, `1` none, `2` error.
 
 ### How a verdict is decided
 

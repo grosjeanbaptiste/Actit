@@ -1,3 +1,5 @@
+use actit::args::{parse_args, NameArgs};
+use actit::contains;
 use actit::error::Error;
 use actit::github::GhNames;
 use actit::indexer::IndexerCatalog;
@@ -12,9 +14,15 @@ use std::process::ExitCode;
 const INDEXER: &str = "https://indexer.acteble.workers.dev";
 const VERIFIED: usize = 5;
 
-fn run_name(repo: &str, owner: Option<String>) -> Result<i32, Error> {
+fn run_name(args: NameArgs) -> Result<i32, Error> {
     let names = GhNames::new(KagProcess::new("gh"));
-    let Some(owner) = owner else {
+    let repo = args.name.as_str();
+    if args.contains {
+        let listing = contains::list(repo, &names)?;
+        print!("{}", contains::render(repo, &listing));
+        return Ok(contains::exit_code(&listing));
+    }
+    let Some(owner) = args.owner else {
         let outcome = name::check_anywhere(repo, &names)?;
         print!("{}", name::render_anywhere(repo, &outcome));
         return Ok(name::exit_code(outcome.status));
@@ -35,8 +43,8 @@ fn run(text: &str) -> Result<i32, Error> {
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let result = match name::parse_args(&args) {
-        Ok(Some((repo, owner))) => run_name(&repo, owner),
+    let result = match parse_args(&args) {
+        Ok(Some(parsed)) => run_name(parsed),
         Ok(None) => run(&args.join(" ")),
         Err(error) => Err(error),
     };

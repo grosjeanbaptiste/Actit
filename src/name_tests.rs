@@ -1,4 +1,5 @@
 use super::*;
+use crate::contains::Listing;
 
 struct Fixed(Result<bool, Error>);
 
@@ -11,6 +12,9 @@ impl RepoNames for Fixed {
     }
     fn search(&self, _: &str) -> Result<Vec<String>, Error> {
         Ok(vec![])
+    }
+    fn contains(&self, _: &str) -> Result<Listing, Error> {
+        Ok(Listing { total: 0, names: vec![] })
     }
 }
 
@@ -28,6 +32,9 @@ impl RepoNames for Anywhere {
     }
     fn search(&self, _: &str) -> Result<Vec<String>, Error> {
         self.found.clone()
+    }
+    fn contains(&self, _: &str) -> Result<Listing, Error> {
+        Ok(Listing { total: 0, names: vec![] })
     }
 }
 
@@ -65,16 +72,6 @@ fn exit_codes_follow_the_need_convention() {
 fn render_names_owner_and_repo() {
     assert_eq!(render("me", "x", NameStatus::Taken), "TAKEN me/x\n");
     assert_eq!(render("me", "x", NameStatus::Free), "FREE me/x\n");
-}
-
-#[test]
-fn args_name_with_optional_owner() {
-    let a = |v: &[&str]| parse_args(&v.iter().map(|s| s.to_string()).collect::<Vec<_>>());
-    assert_eq!(a(&["--name", "x"]), Ok(Some(("x".into(), None))));
-    assert_eq!(a(&["--name", "x", "--owner", "o"]), Ok(Some(("x".into(), Some("o".into())))));
-    assert_eq!(a(&["serialize", "json"]), Ok(None));
-    assert!(matches!(a(&["--name"]), Err(Error::Usage(_))));
-    assert!(matches!(a(&["--name", "x", "--bogus"]), Err(Error::Usage(_))));
 }
 
 #[test]

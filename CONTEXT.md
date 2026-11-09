@@ -9,6 +9,7 @@
 
 - `actit --name <repo> [--owner <o>]`: GitHub name check through `gh` (port `RepoNames`, adapter `github.rs`,
   use case `name.rs`). Without `--owner`: any owner (own repos exact, others via search API, first 100 best matches).
+  `--contains` lists repos whose name contains the text (total from GitHub + first 100; `contains.rs`, args in `args.rs`).
   Exit 0 taken, 1 free, 2 error. Moved here from Actname, whose README says it does not check GitHub.
 
 ## Known gaps
