@@ -31,6 +31,20 @@ impl<R: Runner> RepoNames for GhNames<R> {
             Err(reason) => Err(Error::Github(reason)),
         }
     }
+
+    fn search(&self, name: &str) -> Result<Vec<String>, Error> {
+        let query = format!("search/repositories?q={name}+in:name&per_page=100");
+        let args = ["api", &query, "-q", ".items[].full_name"].map(String::from);
+        let out = self.runner.run(&args).map_err(Error::Github)?;
+        Ok(out
+            .lines()
+            .filter(|full| {
+                full.split_once('/')
+                    .is_some_and(|(_, n)| n.eq_ignore_ascii_case(name))
+            })
+            .map(String::from)
+            .collect())
+    }
 }
 
 #[cfg(test)]

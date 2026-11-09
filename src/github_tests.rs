@@ -52,3 +52,17 @@ fn empty_or_failing_owner_is_an_error() {
     assert!(matches!(GhNames::new(&fake(Ok("\n"))).owner(), Err(Error::Github(_))));
     assert!(matches!(GhNames::new(&fake(Err("no auth"))).owner(), Err(Error::Github(_))));
 }
+
+#[test]
+fn search_keeps_only_exact_names_case_insensitively() {
+    let f = fake(Ok("bob/pr\nacme/pr-agent\neve/PR\nzed/xpr\n"));
+    assert_eq!(GhNames::new(&f).search("pr"), Ok(vec!["bob/pr".into(), "eve/PR".into()]));
+    let call = f.calls.borrow()[0].clone();
+    assert_eq!(call[1], "search/repositories?q=pr+in:name&per_page=100");
+}
+
+#[test]
+fn search_failure_is_an_error() {
+    let f = fake(Err("HTTP 403: rate limit"));
+    assert!(matches!(GhNames::new(&f).search("pr"), Err(Error::Github(m)) if m.contains("rate")));
+}

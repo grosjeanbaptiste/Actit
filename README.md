@@ -39,35 +39,18 @@ Requires `kag` on `PATH` and network access to https://indexer.acteble.workers.d
 ### Is a repository name taken on GitHub?
 
 ```text
-actit --name <repo> [--owner <owner>]
+actit --name <repo>                  # under any owner
+actit --name <repo> --owner <owner>  # one owner, exact
 ```
 
-Asks GitHub through `gh` (so the owner's private repositories count). Without
-`--owner`, the authenticated login is used. Prints `TAKEN <owner>/<repo>` or
-`FREE <owner>/<repo>`; exit `0` taken, `1` free, `2` error (invalid name, `gh`
-missing or unauthenticated, any `gh` failure other than 404). Requires `gh` on `PATH`.
-
-Output, on stdout:
-
-```text
-EXISTS
-- serde (crates_io) https://crates.io/crates/serde
-  1.00 https://docs.rs/serde/... <snippet kag cited>
-! some_tool (github): kag: <why this candidate could not be read>
-```
-
-- First line is the verdict: `EXISTS`, `UNCONFIRMED` (candidates found, no
-  documentation confirms them) or `NO CANDIDATE` (indexer knows nothing for these terms).
-- `- <id> (<registry>) <url>` is a candidate kag read; the next line is its
-  confidence, the page cited and the snippet.
-- `! <id> (<registry>): <reason>` is a candidate that could not be read. It is
-  never dropped silently.
-
-| Exit code | Meaning |
-|---|---|
-| `0` | `EXISTS`: a documented tool answers the need |
-| `1` | `UNCONFIRMED` or `NO CANDIDATE` |
-| `2` | error (empty need, indexer or kag failure) or at least one `!` line; message on stderr |
+Asks GitHub through `gh`. Without `--owner`, every owner counts: your own
+repositories (private ones included) are checked exactly, the others come from
+GitHub search (the first 100 best matches, where exact names rank first, so
+`FREE` means "none among them"). Prints `TAKEN <repo>` and up to 10
+`- owner/repo` lines, or `FREE <repo>`. With `--owner`, prints `TAKEN|FREE
+<owner>/<repo>`. Exit `0` taken, `1` free, `2` error (invalid name, `gh`
+missing or unauthenticated, rate limit, any `gh` failure other than 404).
+Requires `gh` on `PATH`.
 
 ### How a verdict is decided
 
@@ -99,8 +82,8 @@ reader plugs in by implementing them.
 ### Limits
 
 indexer holds a few hundred packages, so a `NO CANDIDATE` means "not in indexer",
-not "does not exist". `--name` only covers GitHub, for one owner: a name free
-there may be taken on another registry, domain or trademark.
+not "does not exist". `--name` only covers GitHub: a name free there may be taken
+on another registry, domain or trademark. GitHub search is capped at 30 requests a minute.
 
 ## Develop
 

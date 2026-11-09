@@ -18,4 +18,7 @@ pub trait RepoNames {
     /// The login whose repositories are checked when no owner is given.
     fn owner(&self) -> Result<String, Error>;
     fn exists(&self, owner: &str, name: &str) -> Result<bool, Error>;
+    /// `owner/name` of the repositories, under any owner, whose name is exactly `name`.
+    /// Only the first 100 best matches are read (exact names rank first).
+    fn search(&self, name: &str) -> Result<Vec<String>, Error>;
 }
