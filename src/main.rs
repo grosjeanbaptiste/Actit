@@ -1,6 +1,10 @@
+use actit::error::Error;
+use actit::github::GhNames;
 use actit::indexer::IndexerCatalog;
 use actit::kag::KagVerifier;
+use actit::name;
 use actit::need::Need;
+use actit::ports::RepoNames;
 use actit::process::{KagProcess, UreqHttp};
 use actit::report::{exit_code, render};
 use actit::search::find;
@@ -9,7 +13,18 @@ use std::process::ExitCode;
 const INDEXER: &str = "https://indexer.acteble.workers.dev";
 const VERIFIED: usize = 5;
 
-fn run(text: &str) -> Result<i32, actit::error::Error> {
+fn run_name(repo: &str, owner: Option<String>) -> Result<i32, Error> {
+    let names = GhNames::new(KagProcess::new("gh"));
+    let owner = match owner {
+        Some(owner) => owner,
+        None => names.owner()?,
+    };
+    let status = name::check(&owner, repo, &names)?;
+    print!("{}", name::render(&owner, repo, status));
+    Ok(name::exit_code(status))
+}
+
+fn run(text: &str) -> Result<i32, Error> {
     let need = Need::new(text)?;
     let catalog = IndexerCatalog::new(INDEXER, &UreqHttp);
     let verifier = KagVerifier::new(KagProcess::new("kag"));
@@ -19,8 +34,13 @@ fn run(text: &str) -> Result<i32, actit::error::Error> {
 }
 
 fn main() -> ExitCode {
-    let text = std::env::args().skip(1).collect::<Vec<_>>().join(" ");
-    match run(&text) {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let result = match name::parse_args(&args) {
+        Ok(Some((repo, owner))) => run_name(&repo, owner),
+        Ok(None) => run(&args.join(" ")),
+        Err(error) => Err(error),
+    };
+    match result {
         Ok(code) => ExitCode::from(code as u8), // codes are 0..=2
         Err(error) => {
             eprintln!("actit: {error}");

@@ -12,9 +12,20 @@ It uses no other search engine and no LLM.
 actit "<need, in plain words>"
 ```
 
-One argument group: every word after `actit` is joined into the need. No options.
+One argument group: every word after `actit` is joined into the need.
 
 Requires `kag` on `PATH` and network access to https://indexer.acteble.workers.dev.
+
+### Is a repository name taken on GitHub?
+
+```text
+actit --name <repo> [--owner <owner>]
+```
+
+Asks GitHub through `gh` (so the owner's private repositories count). Without
+`--owner`, the authenticated login is used. Prints `TAKEN <owner>/<repo>` or
+`FREE <owner>/<repo>`; exit `0` taken, `1` free, `2` error (invalid name, `gh`
+missing or unauthenticated, any `gh` failure other than 404). Requires `gh` on `PATH`.
 
 Output, on stdout:
 
@@ -68,8 +79,8 @@ reader plugs in by implementing them.
 ### Limits
 
 indexer holds a few hundred packages, so a `NO CANDIDATE` means "not in indexer",
-not "does not exist". Whether a repository *name* is free on GitHub is not
-asked here: that belongs to Actname.
+not "does not exist". `--name` only covers GitHub, for one owner: a name free
+there may be taken on another registry, domain or trademark.
 
 ## Develop
 

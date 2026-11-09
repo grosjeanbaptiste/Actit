@@ -8,4 +8,10 @@ pub enum Error {
     Catalog(String),
     #[error("kag: {0}")]
     Kag(String),
+    #[error("github: {0}")]
+    Github(String),
+    #[error("not a valid GitHub repository name: {0:?}")]
+    InvalidName(String),
+    #[error("usage: {0}")]
+    Usage(String),
 }
