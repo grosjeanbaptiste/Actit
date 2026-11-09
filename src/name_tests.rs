@@ -118,3 +118,42 @@ fn render_anywhere_lists_matches_and_caps_them() {
     let free = Outcome { status: NameStatus::Free, matches: vec![] };
     assert!(render_anywhere("pr", &free).starts_with("FREE pr"));
 }
+
+#[test]
+fn github_length_limit_is_100_characters() {
+    let ok = "a".repeat(100);
+    let long = "a".repeat(101);
+    assert_eq!(check("me", &ok, &Fixed(Ok(false))), Ok(NameStatus::Free));
+    assert!(matches!(check("me", &long, &Fixed(Ok(false))), Err(Error::InvalidName(_))));
+}
+
+#[test]
+fn a_dot_git_suffix_is_refused_in_any_case() {
+    for bad in ["x.git", "x.GIT", "x.Git", ".git"] {
+        let r = check("me", bad, &Fixed(Err(Error::Github("must not be called".into()))));
+        assert!(matches!(r, Err(Error::InvalidName(_))), "{bad:?}");
+    }
+}
+
+#[test]
+fn names_that_only_look_like_the_git_suffix_stay_valid() {
+    for ok in [".github", "git", "x.gitx", "my.git.tool", "a-.git-b"] {
+        assert_eq!(check("me", ok, &Fixed(Ok(false))), Ok(NameStatus::Free), "{ok:?}");
+    }
+}
+
+#[test]
+fn unicode_and_symbols_are_refused() {
+    for bad in ["ifdçk", "日本", "a+b", "a@b", "a:b", "a*b", "a\\b", "a~b"] {
+        let r = check("me", bad, &Fixed(Err(Error::Github("must not be called".into()))));
+        assert!(matches!(r, Err(Error::InvalidName(_))), "{bad:?}");
+    }
+}
+
+#[test]
+fn contains_and_anywhere_apply_the_same_rules() {
+    let long = "a".repeat(101);
+    let any = anywhere(false, &[]);
+    assert!(matches!(check_anywhere(&long, &any), Err(Error::InvalidName(_))));
+    assert!(matches!(check_anywhere("x.git", &any), Err(Error::InvalidName(_))));
+}

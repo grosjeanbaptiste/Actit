@@ -51,7 +51,8 @@ GitHub search (the first 100 best matches, where exact names rank first, so
 `- owner/repo` lines, or `FREE <repo>`. With `--owner`, prints `TAKEN|FREE
 <owner>/<repo>`. Exit `0` taken, `1` free, `2` error (invalid name, `gh`
 missing or unauthenticated, rate limit, any `gh` failure other than 404).
-Requires `gh` on `PATH`.
+Requires `gh` on `PATH`. A valid name follows GitHub: 1 to 100 characters of `A-Z a-z 0-9 . _ -`,
+not `.` or `..`, not ending in `.git`.
 
 `--contains` (not combinable with `--owner`) lists repositories whose name
 contains the text: `CONTAINS <repo>: GitHub reports <N> matches, <k> listed`
