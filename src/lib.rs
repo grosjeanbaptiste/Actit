@@ -1,7 +1,9 @@
 pub mod error;
+pub mod github;
 pub mod indexer;
 pub mod kag;
 pub mod model;
+pub mod name;
 pub mod need;
 pub mod ports;
 pub mod process;
