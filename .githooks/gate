@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Shared gate for pre-commit and pre-push: same checks as CI, run through the heavy queue.
+set -euo pipefail
+command -v dotfiles >/dev/null || { echo "gate: dotfiles not found; refusing to run cargo outside the heavy queue" >&2; exit 1; }
+cargo fmt --check
+dotfiles heavy run --medium -- cargo clippy --all-targets -- -D warnings
+dotfiles heavy run --medium -- cargo test
