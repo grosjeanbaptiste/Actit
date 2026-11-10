@@ -11,6 +11,7 @@ pub mod ports;
 pub mod process;
 pub mod report;
 pub mod search;
+pub mod settings;
 
 /// Compiles the README examples so the documented API cannot drift from the code.
 #[cfg(doctest)]

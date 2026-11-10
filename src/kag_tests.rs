@@ -33,15 +33,15 @@ fn need() -> Need {
 
 #[test]
 fn registry_known_to_kag_uses_docs_resolution() {
-    let args = kag_args(&need(), &cand("crates_io", Some("https://docs.rs/serde")));
+    let args = kag_args(&need(), &cand("crates_io", Some("https://docs.rs/serde")), &Ecosystems::default());
     assert_eq!(args, ["serialize structs", "--docs", "crates:serde", "--format", "json"]);
 }
 
 #[test]
 fn other_registry_crawls_docs_url_then_url() {
-    let with = kag_args(&need(), &cand("homebrew", Some("https://docs.example")));
+    let with = kag_args(&need(), &cand("homebrew", Some("https://docs.example")), &Ecosystems::default());
     assert_eq!(with[1..3], ["--crawl", "https://docs.example"]);
-    let without = kag_args(&need(), &cand("github", None));
+    let without = kag_args(&need(), &cand("github", None), &Ecosystems::default());
     assert_eq!(without[1..3], ["--crawl", "https://home.example/serde"]);
 }
 
@@ -72,4 +72,30 @@ fn kag_failure_and_garbage_are_errors() {
     let garbage = KagVerifier::new(runner(Ok("Resolved crates:serde")));
     let err = garbage.verify(&need(), &cand("pypi", None)).unwrap_err();
     assert!(matches!(err, Error::Kag(m) if m.contains("invalid output")));
+}
+
+#[test]
+fn extra_ecosystems_extend_and_override_the_built_in_ones() {
+    let eco = Ecosystems::default().with([("homebrew".to_string(), "brew".to_string())]);
+    let args = kag_args(&need(), &cand("homebrew", None), &eco);
+    assert_eq!(args[1..3], ["--docs", "brew:serde"]);
+    let eco = Ecosystems::default().with([("pypi".to_string(), "pip".to_string())]);
+    assert_eq!(kag_args(&need(), &cand("pypi", None), &eco)[2], "pip:serde");
+}
+
+#[test]
+fn built_in_ecosystems_come_from_the_data_file() {
+    let eco = Ecosystems::default();
+    assert_eq!(eco.get("crates_io"), Some("crates"));
+    assert_eq!(eco.get("unknown_registry"), None);
+}
+
+#[test]
+fn verifier_uses_the_ecosystems_it_was_given() {
+    let out = r#"{"sources":[]}"#;
+    let run = runner(Ok(out));
+    let eco = Ecosystems::default().with([("homebrew".to_string(), "brew".to_string())]);
+    let verifier = KagVerifier::new(run).with_ecosystems(eco);
+    verifier.verify(&need(), &cand("homebrew", None)).unwrap();
+    assert_eq!(verifier.runner.args.borrow()[2], "brew:serde");
 }

@@ -1,0 +1,9 @@
+# indexer registry id = ecosystem name that `kag --docs` resolves
+crates_io=crates
+pypi=pypi
+npm=npm
+rubygems=gem
+go=go
+hex=hex
+cpan=cpan
+hackage=hackage

@@ -11,6 +11,7 @@ pub trait Runner {
 
 pub struct KagVerifier<R: Runner> {
     runner: R,
+    ecosystems: Ecosystems,
 }
 
 #[derive(Deserialize)]
@@ -27,7 +28,15 @@ struct Source {
 
 impl<R: Runner> KagVerifier<R> {
     pub fn new(runner: R) -> Self {
-        Self { runner }
+        Self {
+            runner,
+            ecosystems: Ecosystems::default(),
+        }
+    }
+
+    pub fn with_ecosystems(mut self, ecosystems: Ecosystems) -> Self {
+        self.ecosystems = ecosystems;
+        self
     }
 }
 
@@ -35,7 +44,7 @@ impl<R: Runner> Verifier for KagVerifier<R> {
     fn verify(&self, need: &Need, candidate: &Candidate) -> Result<Option<Evidence>, Error> {
         let out = self
             .runner
-            .run(&kag_args(need, candidate))
+            .run(&kag_args(need, candidate, &self.ecosystems))
             .map_err(Error::Kag)?;
         let answer: Answer = serde_json::from_str(&out)
             .map_err(|e| Error::Kag(format!("invalid output for {}: {e}", candidate.id)))?;
@@ -51,23 +60,39 @@ impl<R: Runner> Verifier for KagVerifier<R> {
     }
 }
 
-/// Ecosystems `kag --docs` resolves by itself, keyed by indexer registry id.
-fn kag_ecosystem(registry: &str) -> Option<&'static str> {
-    match registry {
-        "crates_io" => Some("crates"),
-        "pypi" => Some("pypi"),
-        "npm" => Some("npm"),
-        "rubygems" => Some("gem"),
-        "go" => Some("go"),
-        "hex" => Some("hex"),
-        "cpan" => Some("cpan"),
-        "hackage" => Some("hackage"),
-        _ => None,
+/// Which `kag --docs` ecosystem resolves each indexer registry.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ecosystems(Vec<(String, String)>);
+
+impl Default for Ecosystems {
+    fn default() -> Self {
+        let pairs = include_str!("../resources/ecosystems.txt")
+            .lines()
+            .filter_map(|l| l.split_once('='))
+            .map(|(r, e)| (r.trim().to_string(), e.trim().to_string()))
+            .collect();
+        Self(pairs)
     }
 }
 
-pub fn kag_args(need: &Need, candidate: &Candidate) -> Vec<String> {
-    let source = match kag_ecosystem(&candidate.registry) {
+impl Ecosystems {
+    /// `extra` pairs win over the ones already known.
+    pub fn with(mut self, extra: impl IntoIterator<Item = (String, String)>) -> Self {
+        for (registry, eco) in extra {
+            self.0.retain(|(known, _)| *known != registry);
+            self.0.push((registry, eco));
+        }
+        self
+    }
+
+    pub fn get(&self, registry: &str) -> Option<&str> {
+        let found = self.0.iter().find(|(known, _)| known == registry);
+        found.map(|(_, eco)| eco.as_str())
+    }
+}
+
+pub fn kag_args(need: &Need, candidate: &Candidate, ecosystems: &Ecosystems) -> Vec<String> {
+    let source = match ecosystems.get(&candidate.registry) {
         Some(eco) => ["--docs".to_string(), format!("{eco}:{}", candidate.id)],
         None => {
             let url = candidate.docs_url.as_ref().unwrap_or(&candidate.url);
