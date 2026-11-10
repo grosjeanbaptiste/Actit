@@ -20,3 +20,7 @@
 - Hooks in `.githooks/` (fmt, clippy, tests via heavy queue); enable with `git config core.hooksPath .githooks`.
 
 Sources: `src/*.rs`, indexer API, `kag --help`.
+
+- 2026-11-10: hardcoded values removed from the code (branch `feat/configurable`): `Settings` (flags + `ACTIT_*` env,
+  defaults in one place), `TermRules`, `Policy`, `Ecosystems`; word and ecosystem lists live in `resources/`.
+  Still written in code: GitHub's own rules and search page size (`name.rs`, `github.rs`), kag's `--format json`/`--docs`/`--crawl` protocol.

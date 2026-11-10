@@ -60,16 +60,40 @@ then one `- owner/repo` line per repository (the first 100 best matches; `N` is
 GitHub's own count and may exceed `k`), or `NONE <repo>`. Exit `0` something
 matches, `1` none, `2` error.
 
+### Settings
+
+Nothing is fixed in the code: every value below is a flag, and each one except
+`--ecosystem` can also be set by the environment variable `ACTIT_<FLAG>` (upper case,
+`-` becomes `_`; `ACTIT_ECOSYSTEMS=a=b,c=d` for ecosystems). A flag beats the
+environment, which beats the default. Flags may appear anywhere on the command line.
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--indexer <url>` | `https://indexer.acteble.workers.dev` | catalogue asked for candidates |
+| `--kag <program>` | `kag` | reader run on each candidate |
+| `--gh <program>` | `gh` | GitHub client used by `--name` |
+| `--limit <n>` | `5` | candidates read by kag |
+| `--min-confidence <0..1>` | `0.5` | kag confidence needed to confirm |
+| `--min-coverage <0..1>` | `0.5` | share of the need's terms the snippet must repeat |
+| `--min-term-length <n>` | `3` | shortest word kept as a search term |
+| `--stopwords <file>` | `resources/stopwords.txt` | one word per line, `#` comments; replaces the built-in list |
+| `--ecosystem <registry=eco>` | `resources/ecosystems.txt` | repeatable; adds to or overrides the registry→`kag --docs` map |
+
+The defaults are written once, in `Settings::default()`; the word and ecosystem
+lists are data files under `resources/`. Library callers pass the same values as
+`TermRules` (`Need::with_rules`), `Policy` (`search::find_with`) and `Ecosystems`
+(`KagVerifier::with_ecosystems`).
+
 ### How a verdict is decided
 
 1. The need is split into terms (lowercase, stopwords removed, 3 letters or more).
 2. indexer `/v0/packages?q=<term>` is asked once per term; candidates are ranked by
    how many terms matched.
-3. The best 5 are read by `kag "<need>" --docs <ecosystem>:<id> --format json`
+3. The best `--limit` are read by `kag "<need>" --docs <ecosystem>:<id> --format json`
    (crates, pypi, npm, gem, go, hex, cpan, hackage) or
    `kag "<need>" --crawl <docs_url> --format json` for other registries.
-4. A candidate confirms the need when kag's confidence is at least 0.5 **and** the
-   cited snippet repeats at least half of the need's terms.
+4. A candidate confirms the need when kag's confidence is at least `--min-confidence` **and** the
+   cited snippet repeats at least `--min-coverage` of the need's terms.
 
 ### Library
 

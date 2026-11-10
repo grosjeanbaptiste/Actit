@@ -129,3 +129,25 @@ fn confident_but_off_topic_snippet_does_not_confirm() {
     let report = find(&need("kubernetes operator"), &cat, &ver, 5).unwrap();
     assert_eq!(report.verdict, Verdict::Unconfirmed);
 }
+
+#[test]
+fn policy_thresholds_decide_the_verdict() {
+    let cat = catalog(&[("pdf", &["a"])]);
+    let ver = verifier(&[("a", Ok(Some(0.6)))]);
+    let n = need("pdf");
+    let strict = Policy { min_confidence: 0.9, ..Policy::default() };
+    assert_eq!(find_with(&n, &cat, &ver, &strict).unwrap().verdict, Verdict::Unconfirmed);
+    let lax = Policy { min_confidence: 0.1, ..Policy::default() };
+    assert_eq!(find_with(&n, &cat, &ver, &lax).unwrap().verdict, Verdict::Exists);
+}
+
+#[test]
+fn policy_coverage_decides_the_verdict() {
+    let cat = catalog(&[("pdf", &["a"])]);
+    let ver = verifier(&[("a", Ok(Some(1.0)))]);
+    let n = need("pdf nonsenseword");
+    let strict = Policy { min_coverage: 1.0, ..Policy::default() };
+    assert_eq!(find_with(&n, &cat, &ver, &strict).unwrap().verdict, Verdict::Unconfirmed);
+    let lax = Policy { min_coverage: 0.5, ..Policy::default() };
+    assert_eq!(find_with(&n, &cat, &ver, &lax).unwrap().verdict, Verdict::Exists);
+}
