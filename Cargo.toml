@@ -9,6 +9,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ureq = "2"
 thiserror = "2"
+actautoma = { git = "https://github.com/grosjeanbaptiste/actautoma", rev = "d0abc17fb5eab4f4e7af60ac405043b5a2180aa9" }
 
 [dev-dependencies]
 tempfile = "3"

@@ -1,7 +1,7 @@
 pub mod args;
 pub mod contains;
 pub mod error;
-pub mod github;
+pub mod forge_names;
 pub mod indexer;
 pub mod kag;
 pub mod model;

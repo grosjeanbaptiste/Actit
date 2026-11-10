@@ -7,7 +7,7 @@
 - Verdict EXISTS needs kag confidence ≥ 0.5 **and** snippet covering ≥ 50 % of the need's terms
   (kag confidence is relative, 1.0 on off-topic pages: seen with "translate text offline").
 
-- `actit --name <repo> [--owner <o>]`: GitHub name check through `gh` (port `RepoNames`, adapter `github.rs`,
+- `actit --name <repo> [--owner <o>]`: GitHub name check through actautoma's `Forge` (`Gh` adapter; port `RepoNames`, adapter `forge_names.rs`,
   use case `name.rs`). Without `--owner`: any owner (own repos exact, others via search API, first 100 best matches).
   `--contains` lists repos whose name contains the text (total from GitHub + first 100; `contains.rs`, args in `args.rs`).
   Exit 0 taken, 1 free, 2 error. Moved here from Actname, whose README says it does not check GitHub.
@@ -23,4 +23,5 @@ Sources: `src/*.rs`, indexer API, `kag --help`.
 
 - 2026-11-10: hardcoded values removed from the code (branch `feat/configurable`): `Settings` (flags + `ACTIT_*` env,
   defaults in one place), `TermRules`, `Policy`, `Ecosystems`; word and ecosystem lists live in `resources/`.
-  Still written in code: GitHub's own rules and search page size (`name.rs`, `github.rs`), kag's `--format json`/`--docs`/`--crawl` protocol.
+  Still written in code: GitHub's own rules and search page size (`name.rs`, `forge_names.rs`), kag's `--format json`/`--docs`/`--crawl` protocol.
+- 2026-11-10 (branch `feat/forge-names`): Actit now depends on the `actautoma` crate (git dep, pinned `d0abc17`). `github.rs`/`GhNames` is replaced by `forge_names.rs`/`ForgeNames<F: Forge>`: Actit no longer spawns `gh` itself; actautoma's `Gh` adapter does (`user`, `repo_exists`, `search_repos`), the exact/contains filtering stays here. Same output and exit codes. Verified live with the real `gh`: `--name actautoma --owner grosjeanbaptiste` TAKEN (exit 0), a random name FREE (1), no owner and `--contains` list `grosjeanbaptiste/actautoma`, `--gh /no/such/gh` exit 2 with `not found`. 83 unit + 4 CLI tests pass, clippy `-D warnings` clean. Limit: GitLab (`Glab`) answers `Unsupported` for these lookups.
