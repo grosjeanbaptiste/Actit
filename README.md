@@ -44,7 +44,7 @@ actit --name <repo> --owner <owner>  # one owner, exact
 actit --name <repo> --contains       # every repository whose name contains <repo>
 ```
 
-Asks GitHub through `gh`. Without `--owner`, every owner counts: your own
+Asks GitHub through [actautoma](https://github.com/grosjeanbaptiste/actautoma) (its `gh` adapter; `--gh <path>` picks the binary). Without `--owner`, every owner counts: your own
 repositories (private ones included) are checked exactly, the others come from
 GitHub search (the first 100 best matches, where exact names rank first, so
 `FREE` means "none among them"). Prints `TAKEN <repo>` and up to 10

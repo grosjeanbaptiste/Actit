@@ -1,7 +1,8 @@
+use actautoma::{gh::Gh, process::ProcessRunner};
 use actit::args::{parse_args, NameArgs};
 use actit::contains;
 use actit::error::Error;
-use actit::github::GhNames;
+use actit::forge_names::ForgeNames;
 use actit::indexer::IndexerCatalog;
 use actit::kag::{Ecosystems, KagVerifier};
 use actit::name;
@@ -13,7 +14,7 @@ use actit::settings::Settings;
 use std::process::ExitCode;
 
 fn run_name(args: NameArgs, settings: &Settings) -> Result<i32, Error> {
-    let names = GhNames::new(KagProcess::new(&settings.gh));
+    let names = ForgeNames::new(Gh::new(ProcessRunner).program(&settings.gh));
     let repo = args.name.as_str();
     if args.contains {
         let listing = contains::list(repo, &names)?;

@@ -3,9 +3,15 @@
 version = 4
 
 [[package]]
+name = "actautoma"
+version = "0.1.0"
+source = "git+https://github.com/grosjeanbaptiste/actautoma?rev=d0abc17fb5eab4f4e7af60ac405043b5a2180aa9#d0abc17fb5eab4f4e7af60ac405043b5a2180aa9"
+
+[[package]]
 name = "actit"
 version = "0.1.0"
 dependencies = [
+ "actautoma",
  "serde",
  "serde_json",
  "tempfile",
