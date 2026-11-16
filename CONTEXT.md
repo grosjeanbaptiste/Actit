@@ -1,4 +1,4 @@
-# Context actit — 2026-11-09 (GitHub name check added)
+# Context actit — 2026-11-16 (actautoma bumped to c0af515)
 
 ## State
 - v0 CLI works end to end: `cargo run -- "<need>"`. 32 tests, clippy `-D warnings` and fmt clean.
@@ -25,3 +25,5 @@ Sources: `src/*.rs`, indexer API, `kag --help`.
   defaults in one place), `TermRules`, `Policy`, `Ecosystems`; word and ecosystem lists live in `resources/`.
   Still written in code: GitHub's own rules and search page size (`name.rs`, `forge_names.rs`), kag's `--format json`/`--docs`/`--crawl` protocol.
 - 2026-11-10 (branch `feat/forge-names`): Actit now depends on the `actautoma` crate (git dep, pinned `d0abc17`). `github.rs`/`GhNames` is replaced by `forge_names.rs`/`ForgeNames<F: Forge>`: Actit no longer spawns `gh` itself; actautoma's `Gh` adapter does (`user`, `repo_exists`, `search_repos`), the exact/contains filtering stays here. Same output and exit codes. Verified live with the real `gh`: `--name actautoma --owner grosjeanbaptiste` TAKEN (exit 0), a random name FREE (1), no owner and `--contains` list `grosjeanbaptiste/actautoma`, `--gh /no/such/gh` exit 2 with `not found`. 83 unit + 4 CLI tests pass, clippy `-D warnings` clean. Limit: GitLab (`Glab`) answers `Unsupported` for these lookups.
+- 2026-11-11 (PR #7, merged as `f92cfec`): actautoma pin moves from `d0abc17` to `c0af515` (`Cargo.toml`, `Cargo.lock`). Nothing else changed in Actit; `main` is clean and equals `origin/main` (checked 2026-11-16 with `git status -sb`).
+- 2026-11-16: the stale worktree `bump-actautoma` (its gitdir pointed at the old `~/Source/Actit` path, content identical to `main` per `diff -rq`) was pruned with `git worktree prune` and its folder moved to the Trash.
