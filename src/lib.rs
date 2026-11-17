@@ -1,4 +1,5 @@
 pub mod args;
+pub mod cli;
 pub mod contains;
 pub mod error;
 pub mod forge_names;
