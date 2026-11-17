@@ -14,4 +14,6 @@ pub enum Error {
     InvalidName(String),
     #[error("usage: {0}")]
     Usage(String),
+    #[error("cannot write the answer: {0}")]
+    Output(String),
 }
