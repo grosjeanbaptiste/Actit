@@ -113,7 +113,7 @@ licence or an unreadable expression is `unknown`, never reusable, and says why.
 
 Classes (from `resources/licenses.txt`): `public-domain`, `permissive`, `weak-copyleft`,
 `strong-copyleft`, `network-copyleft`, `restricted` (source-available, non-commercial),
-`proprietary`. The default policy allows `public-domain` and `permissive`; change it with
+`proprietary`. Only licences that permit commercial use can be reusable: `restricted`, `proprietary` and `unknown` never are, and the policy cannot list them (`--allow-license restricted` is an error). The default policy allows `public-domain` and `permissive`; change it with
 `--allow-license permissive,weak-copyleft` or `ACTIT_ALLOW_LICENSE`. The verdict of a
 need search (EXISTS...) and its exit code do not depend on licences. In the library,
 `actit::cli::search(args, env)` returns an `Outcome` whose `reusable()` lists the findings a

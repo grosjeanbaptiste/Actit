@@ -38,6 +38,16 @@ impl Class {
     pub fn parse(text: &str) -> Option<Class> {
         NAMES.iter().find(|(_, n)| *n == text).map(|(c, _)| *c)
     }
+
+    /// Only these classes can ever be reusable: a tool whose licence forbids commercial use
+    /// (non-commercial, source-available with a use limit, proprietary) or that cannot be
+    /// identified is out, whatever the policy says.
+    pub fn permits_commercial_use(self) -> bool {
+        !matches!(
+            self,
+            Class::Restricted | Class::Proprietary | Class::Unknown
+        )
+    }
 }
 
 /// Known licence ids (lowercase) and their class.
@@ -109,19 +119,22 @@ pub fn default_allow() -> Vec<Class> {
     vec![Class::PublicDomain, Class::Permissive]
 }
 
-/// `permissive,weak-copyleft`: a comma list of class names; `unknown` cannot be allowed.
+/// `permissive,weak-copyleft`: a comma list of class names. A class that forbids commercial
+/// use, or `unknown`, cannot be allowed.
 pub fn parse_allow(list: &str) -> Result<Vec<Class>, Error> {
     list.split(',')
         .map(|word| {
             let word = word.trim();
-            Class::parse(word)
-                .filter(|c| *c != Class::Unknown)
-                .ok_or_else(|| {
-                    Error::License(format!(
-                        "{word:?} is not a licence class (one of: {})",
-                        policy_names()
-                    ))
-                })
+            match Class::parse(word) {
+                Some(class) if class.permits_commercial_use() => Ok(class),
+                Some(Class::Unknown) | None => Err(Error::License(format!(
+                    "{word:?} is not a licence class (one of: {})",
+                    policy_names()
+                ))),
+                Some(_) => Err(Error::License(format!(
+                    "{word:?} does not permit commercial use"
+                ))),
+            }
         })
         .collect()
 }
@@ -129,7 +142,7 @@ pub fn parse_allow(list: &str) -> Result<Vec<Class>, Error> {
 fn policy_names() -> String {
     let names: Vec<&str> = NAMES
         .iter()
-        .filter(|(c, _)| *c != Class::Unknown)
+        .filter(|(c, _)| c.permits_commercial_use())
         .map(|(_, n)| *n)
         .collect();
     names.join(", ")
@@ -163,9 +176,14 @@ fn class_of_expr(expr: &Expr, table: &Table, unknown: &mut Vec<String>) -> Class
 }
 
 fn unknown_check(expression: Option<String>, note: String) -> Check {
+    unknown_class_check(expression, Class::Unknown, note)
+}
+
+/// A licence that is never reusable, with the reason.
+fn unknown_class_check(expression: Option<String>, class: Class, note: String) -> Check {
     Check {
         expression,
-        class: Class::Unknown,
+        class,
         allowed: false,
         note: Some(note),
     }
@@ -186,6 +204,9 @@ pub fn check(expression: Option<&str>, table: &Table, allow: &[Class]) -> Check 
     let class = class_of_expr(&expr, table, &mut unknown);
     if class == Class::Unknown {
         return unknown_check(shown, format!("unknown licence id {}", unknown.join(", ")));
+    }
+    if !class.permits_commercial_use() {
+        return unknown_class_check(shown, class, "does not permit commercial use".into());
     }
     Check {
         expression: shown,

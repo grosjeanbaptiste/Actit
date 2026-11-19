@@ -183,3 +183,38 @@ fn a_line_names_the_expression_class_and_verdict() {
     let none = check(None, &t(), &default_allow());
     assert_eq!(render_line(&none), "licence none declared: unknown (not reusable), no licence declared");
 }
+
+const EVERY_CLASS: [Class; 8] = [
+    Class::PublicDomain,
+    Class::Permissive,
+    Class::WeakCopyleft,
+    Class::StrongCopyleft,
+    Class::NetworkCopyleft,
+    Class::Restricted,
+    Class::Proprietary,
+    Class::Unknown,
+];
+
+#[test]
+fn only_classes_that_permit_commercial_use_can_ever_be_reusable() {
+    let commercial = &EVERY_CLASS[..5];
+    assert!(commercial.iter().all(|c| c.permits_commercial_use()));
+    assert!(EVERY_CLASS[5..].iter().all(|c| !c.permits_commercial_use()));
+    // even a policy that lists every class cannot allow what forbids commercial use
+    for expr in ["CC-BY-NC-4.0", "BUSL-1.1", "Elastic-2.0", "UNLICENSED", "MIT AND CC-BY-NC-4.0"] {
+        let got = check(Some(expr), &t(), &EVERY_CLASS);
+        assert!(!got.allowed, "{expr}");
+        assert!(got.note.as_deref().unwrap_or("").contains("commercial"), "{expr}: {got:?}");
+    }
+    // an alternative that permits it is enough
+    assert!(check(Some("MIT OR CC-BY-NC-4.0"), &t(), &EVERY_CLASS).allowed);
+}
+
+#[test]
+fn the_policy_cannot_list_a_class_that_forbids_commercial_use() {
+    for bad in ["restricted", "proprietary", "permissive,restricted"] {
+        let got = parse_allow(bad);
+        assert!(matches!(got, Err(Error::License(ref m)) if m.contains("commercial")), "{bad}: {got:?}");
+    }
+    assert!(parse_allow("public-domain,permissive,weak-copyleft,strong-copyleft,network-copyleft").is_ok());
+}
