@@ -45,3 +45,45 @@ fn gh_program_comes_from_the_flag() {
     assert_eq!(out.status.code(), Some(2));
     assert!(stderr(&out).contains("/no/such/gh"), "{}", stderr(&out));
 }
+
+fn stdout(out: &Output) -> String {
+    String::from_utf8_lossy(&out.stdout).into_owned()
+}
+
+#[test]
+fn license_of_a_permissive_expression_is_reusable_exit_0() {
+    let out = actit(&["--license", "MIT OR GPL-3.0-only"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(
+        stdout(&out).contains("permissive (reusable)"),
+        "{}",
+        stdout(&out)
+    );
+}
+
+#[test]
+fn license_of_a_copyleft_or_unknown_expression_is_not_reusable_exit_1() {
+    for expr in ["GPL-3.0-only", "Frobnicate-1.0", "(MIT"] {
+        let out = actit(&["--license", expr]);
+        assert_eq!(out.status.code(), Some(1), "{expr}: {}", stdout(&out));
+        assert!(
+            stdout(&out).contains("not reusable"),
+            "{expr}: {}",
+            stdout(&out)
+        );
+    }
+}
+
+#[test]
+fn the_allow_policy_changes_the_verdict_and_a_bad_policy_is_exit_2() {
+    let out = actit(&[
+        "--allow-license",
+        "permissive,strong-copyleft",
+        "--license",
+        "GPL-3.0-only",
+    ]);
+    assert_eq!(out.status.code(), Some(0), "{}", stdout(&out));
+    let out = actit(&["--allow-license", "mit", "--license", "MIT"]);
+    assert_eq!(out.status.code(), Some(2));
+    assert!(stderr(&out).contains("mit"), "{}", stderr(&out));
+}

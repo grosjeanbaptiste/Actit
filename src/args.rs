@@ -39,6 +39,18 @@ pub fn parse_args(args: &[String]) -> Result<Option<NameArgs>, Error> {
     Ok(Some(parsed))
 }
 
+/// `--license <expr>...` checks a licence expression; the words after it form one expression.
+pub fn parse_license(args: &[String]) -> Result<Option<String>, Error> {
+    if args.first().map(String::as_str) != Some("--license") {
+        return Ok(None);
+    }
+    let expression = args[1..].join(" ");
+    if expression.trim().is_empty() {
+        return Err(Error::Usage("actit --license <SPDX expression>".into()));
+    }
+    Ok(Some(expression))
+}
+
 #[cfg(test)]
 mod tests {
     include!("args_tests.rs");

@@ -8,6 +8,7 @@ fn cand(id: &str) -> Candidate {
         url: format!("https://crates.io/crates/{id}"),
         docs_url: Some(format!("https://docs.rs/{id}")),
         description: String::new(),
+        license: None,
     }
 }
 
