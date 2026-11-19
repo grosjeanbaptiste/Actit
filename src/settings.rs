@@ -13,6 +13,8 @@ pub struct Settings {
     pub stopwords_file: Option<String>,
     /// `registry=ecosystem` pairs added to (and overriding) the built-in kag ecosystems.
     pub ecosystems: Vec<(String, String)>,
+    /// Licence classes that allow reuse.
+    pub allow_license: Vec<crate::license::Class>,
 }
 
 impl Default for Settings {
@@ -27,6 +29,7 @@ impl Default for Settings {
             min_term_length: 3,
             stopwords_file: None,
             ecosystems: Vec::new(),
+            allow_license: crate::license::default_allow(),
         }
     }
 }
@@ -41,6 +44,7 @@ const OPTIONS: &[&str] = &[
     "min-term-length",
     "stopwords",
     "ecosystem",
+    "allow-license",
 ];
 
 impl Settings {
@@ -84,6 +88,7 @@ impl Settings {
             "kag" => self.kag = value.into(),
             "gh" => self.gh = value.into(),
             "stopwords" => self.stopwords_file = Some(value.into()),
+            "allow-license" => self.allow_license = crate::license::parse_allow(value)?,
             "limit" => self.limit = value.parse().map_err(|_| bad("a whole number"))?,
             "min-term-length" => {
                 let n: usize = value.parse().map_err(|_| bad("a whole number"))?;

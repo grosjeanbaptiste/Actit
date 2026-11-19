@@ -5,6 +5,7 @@ pub mod error;
 pub mod forge_names;
 pub mod indexer;
 pub mod kag;
+pub mod license;
 pub mod model;
 pub mod name;
 pub mod need;
@@ -13,6 +14,7 @@ pub mod process;
 pub mod report;
 pub mod search;
 pub mod settings;
+pub mod spdx;
 
 /// Compiles the README examples so the documented API cannot drift from the code.
 #[cfg(doctest)]

@@ -21,6 +21,7 @@ struct Row {
     docs_url: Option<String>,
     #[serde(default)]
     description: String,
+    license: Option<String>,
 }
 
 impl<'a> IndexerCatalog<'a> {
@@ -49,6 +50,7 @@ fn candidate(row: Row) -> Candidate {
         url: row.url,
         docs_url: row.docs_url,
         description: row.description,
+        license: row.license,
     }
 }
 

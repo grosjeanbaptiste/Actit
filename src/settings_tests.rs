@@ -73,3 +73,15 @@ fn unrelated_flags_pass_through_for_the_name_command() {
     let (_, rest) = Settings::parse(&args, &no_env).unwrap();
     assert_eq!(rest, args);
 }
+
+#[test]
+fn allow_license_comes_from_flag_or_environment_with_a_safe_default() {
+    use crate::license::Class;
+    let (d, _) = Settings::parse(&[], &no_env).unwrap();
+    assert_eq!(d.allow_license, [Class::PublicDomain, Class::Permissive]);
+    let env = |k: &str| (k == "ACTIT_ALLOW_LICENSE").then(|| "weak-copyleft".to_string());
+    assert_eq!(Settings::parse(&[], &env).unwrap().0.allow_license, [Class::WeakCopyleft]);
+    let (flag, _) = Settings::parse(&s(&["--allow-license", "permissive", "x"]), &env).unwrap();
+    assert_eq!(flag.allow_license, [Class::Permissive]);
+    assert!(Settings::parse(&s(&["--allow-license", "mit"]), &no_env).is_err());
+}

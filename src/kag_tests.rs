@@ -24,6 +24,7 @@ fn cand(registry: &str, docs: Option<&str>) -> Candidate {
         url: "https://home.example/serde".into(),
         docs_url: docs.map(String::from),
         description: String::new(),
+        license: None,
     }
 }
 

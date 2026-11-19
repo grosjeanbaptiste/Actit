@@ -33,3 +33,14 @@ fn bad_usage_is_an_error() {
         assert!(matches!(parse(&bad), Err(Error::Usage(_))), "{bad:?}");
     }
 }
+
+fn words(v: &[&str]) -> Vec<String> {
+    v.iter().map(|s| s.to_string()).collect()
+}
+
+#[test]
+fn license_takes_the_rest_of_the_line_as_one_expression() {
+    assert_eq!(parse_license(&words(&["--license", "MIT", "OR", "Apache-2.0"])).unwrap(), Some("MIT OR Apache-2.0".to_string()));
+    assert_eq!(parse_license(&words(&["pdf", "text"])).unwrap(), None);
+    assert!(parse_license(&words(&["--license"])).is_err());
+}

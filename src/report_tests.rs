@@ -9,6 +9,7 @@ fn cand() -> Candidate {
         url: "https://crates.io/crates/serde".into(),
         docs_url: None,
         description: String::new(),
+        license: None,
     }
 }
 
@@ -44,4 +45,23 @@ fn exit_codes_tell_exists_from_not_and_failures() {
     assert_eq!(exit_code(&report(Verdict::Unconfirmed, vec![])), 1);
     assert_eq!(exit_code(&report(Verdict::NoCandidate, vec![])), 1);
     assert_eq!(exit_code(&report(Verdict::Exists, vec![(cand(), Error::Kag("x".into()))])), 2);
+}
+
+#[test]
+fn licensed_rendering_puts_the_verdict_under_each_finding() {
+    use crate::license::{check, default_allow, Table};
+    let r = report(Verdict::Exists, vec![]);
+    let mut licensed = r.clone();
+    licensed.findings[0].candidate.license = Some("MIT".into());
+    let checks: Vec<_> = licensed
+        .findings
+        .iter()
+        .map(|f| check(f.candidate.license.as_deref(), &Table::builtin(), &default_allow()))
+        .collect();
+    let text = render_licensed(&licensed, &checks);
+    assert!(text.starts_with("EXISTS"), "{text}");
+    let lines: Vec<&str> = text.lines().collect();
+    let at = lines.iter().position(|l| l.contains("serde (crates_io)")).unwrap();
+    assert_eq!(lines[at + 2], "  licence MIT: permissive (reusable)", "{text}");
+    assert_eq!(render(&licensed), render_licensed(&licensed, &[]), "no checks, same text");
 }
