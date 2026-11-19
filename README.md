@@ -95,6 +95,31 @@ lists are data files under `resources/`. Library callers pass the same values as
 4. A candidate confirms the need when kag's confidence is at least `--min-confidence` **and** the
    cited snippet repeats at least `--min-coverage` of the need's terms.
 
+### Can the tool be reused? (licences)
+
+Every finding of a need search carries the licence indexer records for it, classified and
+checked against a policy:
+
+```text
+- serde (crates_io) https://crates.io/crates/serde
+  0.91 https://docs.rs/serde ...
+  licence MIT OR Apache-2.0: permissive (reusable)
+```
+
+`actit --license "<SPDX expression>"` checks one expression alone (exit 0 reusable, 1 not,
+2 error). `OR` takes the least restrictive alternative, `AND` the most restrictive, `WITH`
+keeps the class of its licence, `+` means or-later; an id the table does not know, a missing
+licence or an unreadable expression is `unknown`, never reusable, and says why.
+
+Classes (from `resources/licenses.txt`): `public-domain`, `permissive`, `weak-copyleft`,
+`strong-copyleft`, `network-copyleft`, `restricted` (source-available, non-commercial),
+`proprietary`. Only licences that permit commercial use can be reusable: `restricted`, `proprietary` and `unknown` never are, and the policy cannot list them (`--allow-license restricted` is an error). The default policy allows `public-domain` and `permissive`; change it with
+`--allow-license permissive,weak-copyleft` or `ACTIT_ALLOW_LICENSE`. The verdict of a
+need search (EXISTS...) and its exit code do not depend on licences. In the library,
+`actit::cli::search(args, env)` returns an `Outcome` whose `reusable()` lists the findings a
+project may build on. This is a screening aid on the licence field of the catalogue, not
+legal advice.
+
 ### Library
 
 ```rust,no_run

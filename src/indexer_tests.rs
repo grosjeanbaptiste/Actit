@@ -60,3 +60,13 @@ fn malformed_json_is_an_error_not_an_empty_list() {
     let err = IndexerCatalog::new("https://i", &http(Ok("<html>"))).packages("x").unwrap_err();
     assert!(matches!(err, Error::Catalog(m) if m.contains("invalid response")));
 }
+
+#[test]
+fn the_licence_is_read_and_may_be_missing() {
+    let fake = http(Ok(SERDE));
+    let found = IndexerCatalog::new("https://i.example", &fake).packages("serde").unwrap();
+    assert_eq!(found[0].license.as_deref(), Some("MIT"));
+    let bare = http(Ok(r#"[{"id":"x","registry":"npm","url":"u"}]"#));
+    let found = IndexerCatalog::new("https://i.example", &bare).packages("x").unwrap();
+    assert_eq!(found[0].license, None);
+}

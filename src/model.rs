@@ -8,6 +8,8 @@ pub struct Candidate {
     pub url: String,
     pub docs_url: Option<String>,
     pub description: String,
+    /// SPDX expression as indexer records it; `None` when it declares none.
+    pub license: Option<String>,
 }
 
 /// What kag cited from the candidate's documentation for the need.

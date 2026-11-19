@@ -12,6 +12,10 @@ pub enum Error {
     Github(String),
     #[error("not a valid GitHub repository name: {0:?}")]
     InvalidName(String),
+    #[error("licence: {0}")]
+    License(String),
     #[error("usage: {0}")]
     Usage(String),
+    #[error("cannot write the answer: {0}")]
+    Output(String),
 }
