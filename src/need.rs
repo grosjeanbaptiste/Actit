@@ -61,14 +61,17 @@ impl Need {
         &self.terms
     }
 
-    /// Share of the need's terms that appear in `text`, case-insensitively.
+    /// Share of the need's terms that appear in `text` as whole words (a plural `s` is accepted),
+    /// case-insensitively. A fragment of a longer word does not count: `age` is not in `coverage`.
     pub fn coverage(&self, text: &str) -> f32 {
         let text = text.to_lowercase();
-        let hit = self
-            .terms
-            .iter()
-            .filter(|t| text.contains(t.as_str()))
-            .count();
+        let words: Vec<&str> = text.split(|c: char| !c.is_alphanumeric()).collect();
+        let found = |term: &String| {
+            words
+                .iter()
+                .any(|w| w == term || w.strip_suffix('s') == Some(term.as_str()))
+        };
+        let hit = self.terms.iter().filter(|t| found(t)).count();
         hit as f32 / self.terms.len() as f32
     }
 }
@@ -97,6 +100,21 @@ mod tests {
         assert_eq!(need.coverage("A PDF reader"), 1.0 / 3.0);
         assert_eq!(need.coverage("nothing"), 0.0);
         assert_eq!(need.coverage("pdf TEXT converter"), 1.0);
+    }
+
+    #[test]
+    fn coverage_counts_whole_words_not_fragments_of_longer_words() {
+        let need = Need::new("age encryption").unwrap();
+        assert_eq!(need.coverage("Coverage 100% of the package, usage"), 0.0);
+        assert_eq!(need.coverage("age keys"), 0.5);
+        assert_eq!(need.coverage("(age) encryption."), 1.0);
+    }
+
+    #[test]
+    fn coverage_accepts_a_plural_of_the_term() {
+        let need = Need::new("pdf reader").unwrap();
+        assert_eq!(need.coverage("pdfs and readers"), 1.0);
+        assert_eq!(need.coverage("pdfx"), 0.0);
     }
 
     #[test]
