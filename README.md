@@ -145,8 +145,8 @@ on another registry, domain or trademark. GitHub search is capped at 30 requests
 ## Develop
 
 ```text
-dotfiles heavy run --medium -- cargo test
-dotfiles heavy run --medium -- cargo clippy --all-targets -- -D warnings
+actqueue run --medium -- cargo test
+actqueue run --medium -- cargo clippy --all-targets -- -D warnings
 ```
 
 Hooks in `.githooks/` run the same gate: `git config core.hooksPath .githooks`.
