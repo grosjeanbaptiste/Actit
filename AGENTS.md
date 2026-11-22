@@ -4,7 +4,7 @@ Does a tool already exist for this need? Answers only from **indexer** (catalogu
 No other search engine, no LLM. Pure TDD in Rust: red test first, then code.
 
 - Read `CONTEXT.md` first.
-- Run cargo through `dotfiles heavy run --medium -- cargo test|clippy --all-targets -- -D warnings`; `cargo fmt --check`.
+- Run cargo through `actqueue run --medium -- cargo test|clippy --all-targets -- -D warnings`; `cargo fmt --check`.
 - Hexagonal: `search.rs` is the use case; `ports.rs` holds `Catalog` (indexer) and `Verifier` (kag);
   `RepoNames` (GitHub, through actautoma's `Forge` and its `gh` adapter) is a third port: `name.rs` use case, `forge_names.rs` adapter.
   `indexer.rs`, `kag.rs`, `process.rs` are adapters behind the `Http`/`Runner` seams.
