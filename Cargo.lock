@@ -5,8 +5,9 @@ version = 4
 [[package]]
 name = "actautoma"
 version = "0.1.0"
-source = "git+https://github.com/grosjeanbaptiste/actautoma?rev=858d7c9def39188331c449b92f875c846ebd0e35#858d7c9def39188331c449b92f875c846ebd0e35"
+source = "git+https://github.com/grosjeanbaptiste/actautoma?rev=6b3239bf877cc234c52c5c1b99dda57e15974602#6b3239bf877cc234c52c5c1b99dda57e15974602"
 dependencies = [
+ "actpath",
  "serde_json",
 ]
 
@@ -21,6 +22,11 @@ dependencies = [
  "thiserror",
  "ureq",
 ]
+
+[[package]]
+name = "actpath"
+version = "0.1.0"
+source = "git+ssh://git@github.com/grosjeanbaptiste/actpath.git?rev=145c049dc720fb6dbd7ee3a3483588788aed2bae#145c049dc720fb6dbd7ee3a3483588788aed2bae"
 
 [[package]]
 name = "adler2"
