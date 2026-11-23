@@ -4,6 +4,24 @@ Does a tool already exist for this need? Actit answers from **indexer** (the
 catalogue of packages) and **kag** (reads their documentation, cites sources).
 It uses no other search engine and no LLM.
 
+## Contents
+
+- [How it works](#how-it-works)
+- [Install](#install)
+- [API](#api)
+- [Develop](#develop)
+
+## How it works
+
+```mermaid
+flowchart LR
+    need["need"] --> actit["actit"]
+    actit --> indexer["indexer: catalogue of packages"]
+    actit --> kag["kag: reads documentation, cites sources"]
+    indexer --> ans["answer: does a tool already exist?"]
+    kag --> ans
+```
+
 ## Install
 
 Needs Rust (`rustup`, toolchain pinned by `rust-toolchain.toml`) and `kag` on `PATH`.
